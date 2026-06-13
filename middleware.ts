@@ -6,13 +6,24 @@ export async function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || ''
   const host = hostname.split(':')[0]
 
-  // ── Skip static assets and Next internals ──
+  // ── Skip static assets, Next internals, and debug route ──
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/favicon') ||
+    pathname.startsWith('/api/debug') ||
+    pathname.startsWith('/superadmin') ||
     pathname.includes('.')
   ) {
     return NextResponse.next()
+  }
+
+  // ── Check env vars are present ──
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return NextResponse.json({
+      error: 'Missing Supabase environment variables',
+      supabase_url_set: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+      service_role_set: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+    }, { status: 500 })
   }
 
   // ── Resolve tenant from hostname ──
@@ -27,44 +38,50 @@ export async function middleware(request: NextRequest) {
     )
 
     // Try custom domain first
-    let { data: tenant } = await supabase
+    const { data: byDomain } = await supabase
       .from('tenants')
       .select('id, subdomain, active')
       .eq('custom_domain', host)
       .eq('active', true)
-      .single()
+      .maybeSingle()
 
-    // Fall back to subdomain
-    if (!tenant) {
+    if (byDomain) {
+      tenantId = byDomain.id
+      tenantSubdomain = byDomain.subdomain
+    } else {
+      // Fall back to subdomain
       const parts = host.split('.')
       const subdomain = parts.length >= 3 ? parts[0] : null
 
       if (subdomain && subdomain !== 'www') {
-        const { data } = await supabase
+        const { data: bySubdomain } = await supabase
           .from('tenants')
           .select('id, subdomain, active')
           .eq('subdomain', subdomain)
           .eq('active', true)
-          .single()
-        tenant = data
+          .maybeSingle()
+
+        if (bySubdomain) {
+          tenantId = bySubdomain.id
+          tenantSubdomain = bySubdomain.subdomain
+        }
       }
     }
-
-    if (tenant) {
-      tenantId = tenant.id
-      tenantSubdomain = tenant.subdomain
-    }
   } catch (err) {
-    console.error('[Middleware] Tenant resolution error:', err)
+    console.error('[Middleware] Supabase error:', err)
+    return NextResponse.json({
+      error: 'Database connection failed',
+      detail: err instanceof Error ? err.message : String(err),
+      host,
+    }, { status: 500 })
   }
 
-  // ── No tenant found — 404 ──
+  // ── No tenant found ──
   if (!tenantId) {
-    // Allow super admin panel without tenant
-    if (pathname.startsWith('/superadmin')) {
-      return NextResponse.next()
-    }
-    return NextResponse.json({ error: 'Store not found' }, { status: 404 })
+    return NextResponse.json({
+      error: 'Store not found',
+      host_checked: host,
+    }, { status: 404 })
   }
 
   // ── Inject tenant info into request headers ──
@@ -72,16 +89,9 @@ export async function middleware(request: NextRequest) {
   requestHeaders.set('x-tenant-id', tenantId)
   requestHeaders.set('x-tenant-subdomain', tenantSubdomain || '')
 
-  const response = NextResponse.next({ request: { headers: requestHeaders } })
-
-  // ── Pass tenant headers to response for client access ──
-  response.headers.set('x-tenant-id', tenantId)
-
-  return response
+  return NextResponse.next({ request: { headers: requestHeaders } })
 }
 
 export const config = {
-  matcher: [
-    '/((?!_next/static|_next/image|favicon.ico).*)',
-  ],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 }
