@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
 
 export async function PUT(request: NextRequest) {
   const tenantId = request.headers.get('x-tenant-id')
@@ -14,5 +15,10 @@ export async function PUT(request: NextRequest) {
     .eq('id', tenantId)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+
+  // Revalidate all pages so new brand config is picked up immediately
+  revalidatePath('/', 'layout')
+  revalidatePath('/master-admin', 'layout')
+
   return NextResponse.json({ success: true })
 }

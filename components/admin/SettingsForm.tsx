@@ -52,8 +52,7 @@ export default function SettingsForm({ tenant }: { tenant: Tenant }) {
     setSaving(false)
     if (res.ok) {
       setSaved(true)
-      setTimeout(() => setSaved(false), 3000)
-      router.refresh()
+      setTimeout(() => window.location.reload(), 800)
     }
   }
 
