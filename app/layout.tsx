@@ -8,13 +8,13 @@ import Footer from '@/components/store/Footer'
 import { Tenant } from '@/types'
 
 export const dynamic = 'force-dynamic'
+export const fetchCache = 'force-no-store'
 export const revalidate = 0
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const headersList = headers()
   const tenantId = headersList.get('x-tenant-id')
 
-  // Allow API routes without tenant
   if (!tenantId) {
     return (
       <html lang="en">
@@ -52,6 +52,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <head>
         <title>{tenant.brand_name}</title>
         <meta name="description" content={tenant.tagline || tenant.brand_name} />
+        <meta httpEquiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta httpEquiv="Pragma" content="no-cache" />
+        <meta httpEquiv="Expires" content="0" />
         {tenant.favicon_url && <link rel="icon" href={tenant.favicon_url} />}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
