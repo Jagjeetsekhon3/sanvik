@@ -49,10 +49,15 @@ export default function SettingsForm({ tenant }: { tenant: Tenant }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form),
     })
+    const data = await res.json()
     setSaving(false)
     if (res.ok) {
       setSaved(true)
-      setTimeout(() => window.location.reload(), 800)
+      // Show what DB actually has now
+      alert('Saved! DB now has: ' + JSON.stringify(data.saved))
+      window.location.reload()
+    } else {
+      alert('Error: ' + data.error)
     }
   }
 
