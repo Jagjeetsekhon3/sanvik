@@ -7,6 +7,9 @@ import Navbar from '@/components/store/Navbar'
 import Footer from '@/components/store/Footer'
 import { Tenant } from '@/types'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const headersList = headers()
   const tenantId = headersList.get('x-tenant-id')

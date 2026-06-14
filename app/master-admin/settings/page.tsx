@@ -3,6 +3,9 @@ import { notFound } from 'next/navigation'
 import { getTenantById } from '@/lib/tenant'
 import SettingsForm from '@/components/admin/SettingsForm'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export default async function AdminSettingsPage() {
   const headersList = headers()
   const tenantId = headersList.get('x-tenant-id')

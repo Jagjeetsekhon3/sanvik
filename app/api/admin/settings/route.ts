@@ -16,9 +16,10 @@ export async function PUT(request: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
-  // Revalidate all pages so new brand config is picked up immediately
+  // Revalidate every route
   revalidatePath('/', 'layout')
   revalidatePath('/master-admin', 'layout')
+  revalidatePath('/master-admin/settings', 'page')
 
   return NextResponse.json({ success: true })
 }

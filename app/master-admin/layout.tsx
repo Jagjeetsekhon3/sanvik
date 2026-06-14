@@ -4,6 +4,9 @@ import { createClient, createServiceClient } from '@/lib/supabase/server'
 import AdminSidebar from '@/components/admin/AdminSidebar'
 import { getTenantById } from '@/lib/tenant'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const headersList = headers()
   const tenantId = headersList.get('x-tenant-id')
