@@ -256,3 +256,64 @@ export interface FooterConfig {
   bottom_text: string | null
   show_payments: boolean
 }
+
+// ─── BANNER ───────────────────────────────────────────────────────
+
+export interface BannerConfig {
+  id?: string
+  tenant_id: string
+  enabled: boolean
+  layout: 'full' | 'split' | 'minimal'
+  bg_color: string
+  bg_image_url: string | null
+  bg_overlay: number
+  heading: string
+  subheading: string | null
+  body_text: string | null
+  badge_text: string | null
+  cta_label: string
+  cta_href: string
+  cta_color: string
+  cta2_label: string | null
+  cta2_href: string | null
+  text_color: string
+  text_align: 'left' | 'center' | 'right'
+  min_height: number
+}
+
+// ─── HOMEPAGE SECTIONS ────────────────────────────────────────────
+
+export type SectionType =
+  | 'banner'
+  | 'featured_products'
+  | 'new_arrivals'
+  | 'category_grid'
+  | 'instagram_feed'
+  | 'brand_story'
+  | 'text_block'
+  | 'image_banner'
+  | 'video_banner'
+
+export interface HomeSection {
+  id: string
+  type: SectionType
+  enabled: boolean
+  title?: string
+  subtitle?: string
+  // Featured/New arrivals
+  limit?: number
+  category?: string
+  // Image/Video banner
+  image_url?: string
+  video_url?: string
+  bg_color?: string
+  text_color?: string
+  heading?: string
+  body?: string
+  cta_label?: string
+  cta_href?: string
+  min_height?: number
+  // Text block
+  content?: string
+  align?: 'left' | 'center' | 'right'
+}
