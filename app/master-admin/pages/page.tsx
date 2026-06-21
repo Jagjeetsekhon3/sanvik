@@ -235,7 +235,7 @@ export default function PagesAdminPage() {
                   {page.content?.slice(0, 60)}{(page.content?.length || 0) > 60 ? '...' : ''}
                 </p>
               </div>
-              <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.75rem', color: '#888', fontFamily: 'monospace' }}>/{page.slug}</span>
+              <span style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: '#888' }}>/{page.slug}</span>
               <button onClick={() => handleToggle(page)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontSize: '0.65rem', padding: '3px 8px', borderRadius: '20px', backgroundColor: page.is_active ? '#22c55e18' : '#ef444418', color: page.is_active ? '#22c55e' : '#ef4444', letterSpacing: '0.05em', textTransform: 'uppercase', width: 'fit-content' }}>
                 {page.is_active ? 'Published' : 'Draft'}
               </button>
