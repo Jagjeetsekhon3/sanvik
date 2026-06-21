@@ -89,8 +89,8 @@ export default function AddToCart({ product }: { product: Product }) {
             <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.72rem', letterSpacing: '0.12em', textTransform: 'uppercase', opacity: 0.5, margin: 0 }}>
               Size: <span style={{ opacity: 1, fontWeight: 500 }}>{selectedSize}</span>
             </p>
-            {(product as Record<string,unknown>).size_guide_id && (
-              <SizeGuideModal sizeGuideId={(product as Record<string,unknown>).size_guide_id as string} />
+            {product.size_guide_id && (
+              <SizeGuideModal sizeGuideId={product.size_guide_id} />
             )}
           </div>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>

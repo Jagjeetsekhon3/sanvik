@@ -60,6 +60,9 @@ export interface Product {
   is_featured: boolean
   created_at: string
   updated_at: string
+  size_guide_id?: string | null
+  instagram_video_url?: string | null
+  categories?: string[]
   variants?: ProductVariant[]
 }
 

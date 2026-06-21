@@ -35,7 +35,7 @@ export default function ProductForm({ product, tenantId }: {
   const [images, setImages] = useState<string[]>(
     ((product?.images as string[]) || []).length > 0 ? (product?.images as string[]) : ['', '', '', '']
   )
-  const [instagramVideoUrl, setInstagramVideoUrl] = useState(product?.instagram_video_url ? String(product.instagram_video_url) : '')
+  const [instagramVideoUrl, setInstagramVideoUrl] = useState(product?.instagram_video_url || '')
   const [isFeatured, setIsFeatured] = useState(Boolean(product?.is_featured))
   const [isActive, setIsActive] = useState(product ? Boolean(product.is_active) : true)
   const [tags, setTags] = useState(((product?.tags as string[]) || []).join(', '))
@@ -46,7 +46,7 @@ export default function ProductForm({ product, tenantId }: {
   )
 
   const [sizeGuides, setSizeGuides] = useState<{id:string;name:string}[]>([])
-  const [selectedSizeGuideId, setSelectedSizeGuideId] = useState<string>(String((product as Record<string,unknown>)?.size_guide_id || ''))
+  const [selectedSizeGuideId, setSelectedSizeGuideId] = useState<string>(product?.size_guide_id ? String(product.size_guide_id) : '')
 
   useEffect(() => {
     fetch('/api/admin/categories').then(r => r.json()).then(data => {
