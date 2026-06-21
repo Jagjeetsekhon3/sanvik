@@ -15,6 +15,7 @@ const NAV = [
   { label: 'Media', href: '/master-admin/media', icon: '◧' },
   { label: 'Discounts', href: '/master-admin/discounts', icon: '◇' },
   { label: 'Homepage', href: '/master-admin/homepage', icon: '⌂' },
+  { label: 'Pages', href: '/master-admin/pages', icon: '◻' },
   { label: 'Banner', href: '/master-admin/banner', icon: '◰' },
   { label: 'Menu', href: '/master-admin/menu', icon: '≡' },
   { label: 'Header', href: '/master-admin/header', icon: '▬' },
