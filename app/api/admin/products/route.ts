@@ -12,37 +12,69 @@ export async function POST(request: NextRequest) {
     const tenantId = request.headers.get('x-tenant-id')
     if (!tenantId) return NextResponse.json({ error: 'No tenant' }, { status: 400 })
 
-    const { product, variants } = await request.json()
+    const body = await request.json()
+    const { product, variants } = body
     const { url, key } = sb()
 
     // Insert product
     const productRes = await fetch(`${url}/rest/v1/products`, {
       method: 'POST',
-      headers: { 'apikey': key, 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+      headers: {
+        'apikey': key,
+        'Authorization': `Bearer ${key}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation',
+      },
       body: JSON.stringify({ ...product, tenant_id: tenantId }),
     })
 
     const productData = await productRes.json()
-    if (!productRes.ok) return NextResponse.json({ error: productData.message || 'Failed to create product' }, { status: 400 })
-
-    const newProduct = productData[0]
-
-    // Insert variants
-    if (variants?.length > 0) {
-      const variantRes = await fetch(`${url}/rest/v1/product_variants`, {
-        method: 'POST',
-        headers: { 'apikey': key, 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
-        body: JSON.stringify(variants.map((v: Record<string, unknown>) => ({ ...v, product_id: newProduct.id }))),
-      })
-      if (!variantRes.ok) {
-        const err = await variantRes.json()
-        console.error('Variant insert error:', err)
-      }
+    if (!productRes.ok) {
+      return NextResponse.json({ error: productData.message || productData.details || JSON.stringify(productData) }, { status: 400 })
     }
 
-    return NextResponse.json({ product: newProduct })
+    const newProduct = Array.isArray(productData) ? productData[0] : productData
+    if (!newProduct?.id) {
+      return NextResponse.json({ error: 'Product created but no ID returned', raw: productData }, { status: 500 })
+    }
+
+    // Insert variants one by one to catch individual errors
+    const variantResults = []
+    const cleanVariants = (variants || []).filter((v: Record<string, unknown>) => v.size && v.color)
+
+    for (const variant of cleanVariants) {
+      const vRes = await fetch(`${url}/rest/v1/product_variants`, {
+        method: 'POST',
+        headers: {
+          'apikey': key,
+          'Authorization': `Bearer ${key}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=representation',
+        },
+        body: JSON.stringify({
+          product_id: newProduct.id,
+          size: variant.size,
+          color: variant.color,
+          color_hex: variant.color_hex || '#000000',
+          stock: Number(variant.stock) || 0,
+          sku: variant.sku || null,
+          price_override: variant.price_override ? Number(variant.price_override) : null,
+        }),
+      })
+      const vData = await vRes.json()
+      variantResults.push({ ok: vRes.ok, status: vRes.status, data: vData })
+    }
+
+    const failedVariants = variantResults.filter(r => !r.ok)
+
+    return NextResponse.json({
+      product: newProduct,
+      variants_attempted: cleanVariants.length,
+      variants_saved: variantResults.filter(r => r.ok).length,
+      variant_errors: failedVariants.length > 0 ? failedVariants : undefined,
+    })
   } catch (err: unknown) {
-    return NextResponse.json({ error: err instanceof Error ? err.message : 'Error' }, { status: 500 })
+    return NextResponse.json({ error: err instanceof Error ? err.message : String(err) }, { status: 500 })
   }
 }
 
@@ -57,34 +89,63 @@ export async function PUT(request: NextRequest) {
     // Update product
     const productRes = await fetch(`${url}/rest/v1/products?id=eq.${productId}&tenant_id=eq.${tenantId}`, {
       method: 'PATCH',
-      headers: { 'apikey': key, 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+      headers: {
+        'apikey': key,
+        'Authorization': `Bearer ${key}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation',
+      },
       body: JSON.stringify(product),
     })
 
-    const productData = await productRes.json()
-    if (!productRes.ok) return NextResponse.json({ error: productData.message || 'Failed to update product' }, { status: 400 })
+    if (!productRes.ok) {
+      const err = await productRes.json()
+      return NextResponse.json({ error: err.message || JSON.stringify(err) }, { status: 400 })
+    }
 
-    // Delete old variants then insert new ones
+    // Delete existing variants
     await fetch(`${url}/rest/v1/product_variants?product_id=eq.${productId}`, {
       method: 'DELETE',
       headers: { 'apikey': key, 'Authorization': `Bearer ${key}` },
     })
 
-    if (variants?.length > 0) {
-      const variantRes = await fetch(`${url}/rest/v1/product_variants`, {
+    // Insert new variants one by one
+    const cleanVariants = (variants || []).filter((v: Record<string, unknown>) => v.size && v.color)
+    const variantResults = []
+
+    for (const variant of cleanVariants) {
+      const vRes = await fetch(`${url}/rest/v1/product_variants`, {
         method: 'POST',
-        headers: { 'apikey': key, 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
-        body: JSON.stringify(variants.map((v: Record<string, unknown>) => ({ ...v, product_id: productId }))),
+        headers: {
+          'apikey': key,
+          'Authorization': `Bearer ${key}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=representation',
+        },
+        body: JSON.stringify({
+          product_id: productId,
+          size: variant.size,
+          color: variant.color,
+          color_hex: variant.color_hex || '#000000',
+          stock: Number(variant.stock) || 0,
+          sku: variant.sku || null,
+          price_override: variant.price_override ? Number(variant.price_override) : null,
+        }),
       })
-      if (!variantRes.ok) {
-        const err = await variantRes.json()
-        console.error('Variant update error:', err)
-      }
+      const vData = await vRes.json()
+      variantResults.push({ ok: vRes.ok, status: vRes.status, data: vData })
     }
 
-    return NextResponse.json({ product: productData[0] })
+    const failedVariants = variantResults.filter(r => !r.ok)
+
+    return NextResponse.json({
+      success: true,
+      variants_attempted: cleanVariants.length,
+      variants_saved: variantResults.filter(r => r.ok).length,
+      variant_errors: failedVariants.length > 0 ? failedVariants : undefined,
+    })
   } catch (err: unknown) {
-    return NextResponse.json({ error: err instanceof Error ? err.message : 'Error' }, { status: 500 })
+    return NextResponse.json({ error: err instanceof Error ? err.message : String(err) }, { status: 500 })
   }
 }
 
@@ -96,13 +157,11 @@ export async function DELETE(request: NextRequest) {
     const { productId } = await request.json()
     const { url, key } = sb()
 
-    // Delete variants first
     await fetch(`${url}/rest/v1/product_variants?product_id=eq.${productId}`, {
       method: 'DELETE',
       headers: { 'apikey': key, 'Authorization': `Bearer ${key}` },
     })
 
-    // Delete product
     await fetch(`${url}/rest/v1/products?id=eq.${productId}&tenant_id=eq.${tenantId}`, {
       method: 'DELETE',
       headers: { 'apikey': key, 'Authorization': `Bearer ${key}` },
@@ -110,6 +169,6 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ success: true })
   } catch (err: unknown) {
-    return NextResponse.json({ error: err instanceof Error ? err.message : 'Error' }, { status: 500 })
+    return NextResponse.json({ error: err instanceof Error ? err.message : String(err) }, { status: 500 })
   }
 }

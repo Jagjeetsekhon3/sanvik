@@ -105,13 +105,17 @@ export default function ProductForm({ product, tenantId }: {
         price_override: v.price_override ? parseFloat(v.price_override) : null,
       }))
 
+    const requestBody = { product: payload, variants: cleanVariants, productId: product?.id }
+    console.log('[ProductForm] Saving:', JSON.stringify(requestBody, null, 2))
+
     const res = await fetch('/api/admin/products', {
       method: product ? 'PUT' : 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ product: payload, variants: cleanVariants, productId: product?.id }),
+      body: JSON.stringify(requestBody),
     })
 
     const data = await res.json()
+    console.log('[ProductForm] Response:', JSON.stringify(data, null, 2))
     setSaving(false)
     if (data.error) { setError(data.error); return }
     router.push('/master-admin/products')
@@ -267,6 +271,28 @@ export default function ProductForm({ product, tenantId }: {
             </label>
           ))}
         </div>
+      </div>
+
+      {/* Bottom save button */}
+      <div style={{ display: 'flex', gap: '12px', paddingTop: '8px', paddingBottom: '40px' }}>
+        <button onClick={handleSave} disabled={saving} style={{
+          backgroundColor: saving ? 'rgba(0,0,0,0.3)' : '#111',
+          color: '#fff', border: 'none',
+          cursor: saving ? 'not-allowed' : 'pointer',
+          fontFamily: 'Inter, sans-serif', fontSize: '0.75rem',
+          letterSpacing: '0.12em', textTransform: 'uppercase',
+          padding: '15px 40px', fontWeight: 700, borderRadius: '4px',
+          opacity: saving ? 0.6 : 1, flex: 1,
+        }}>
+          {saving ? 'Saving...' : product ? '✓ Save Changes' : '✓ Publish Product'}
+        </button>
+        <button onClick={() => router.back()} style={{
+          background: 'none', border: '1px solid #e5e5e5', borderRadius: '4px',
+          cursor: 'pointer', padding: '15px 24px',
+          fontFamily: 'Inter, sans-serif', fontSize: '0.75rem', color: '#666',
+        }}>
+          Cancel
+        </button>
       </div>
     </div>
   )
