@@ -5,6 +5,7 @@ import { getFeaturedProducts, getNewArrivals } from '@/lib/store/products'
 import { notFound } from 'next/navigation'
 import ProductCard from '@/components/store/ProductCard'
 import InstagramFeed from '@/components/store/InstagramFeed'
+import HeroBanner from '@/components/store/HeroBanner'
 
 export default async function HomePage() {
   const headersList = headers()
@@ -21,130 +22,10 @@ export default async function HomePage() {
 
   return (
     <div>
-      {/* ── Hero ── */}
-      <section style={{
-        minHeight: 'calc(100vh - 64px)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        position: 'relative',
-        overflow: 'hidden',
-        backgroundColor: 'var(--color-primary)',
-      }}>
-        {/* Decorative line */}
-        <div style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '1px',
-          height: '80%',
-          backgroundColor: 'var(--color-accent)',
-          opacity: 0.15,
-        }} />
+      {/* ── Hero Banner ── */}
+      <HeroBanner tenant={tenant} tenantId={tenantId} />
 
-        <div style={{ textAlign: 'center', position: 'relative', zIndex: 1, padding: '0 32px' }}>
-          <p style={{
-            fontFamily: 'var(--font-body)',
-            fontSize: '0.7rem',
-            letterSpacing: '0.3em',
-            textTransform: 'uppercase',
-            color: 'var(--color-accent)',
-            marginBottom: '24px',
-          }}>
-            New Collection
-          </p>
-
-          <h1 style={{
-            fontFamily: 'var(--font-heading)',
-            fontSize: 'clamp(3.5rem, 10vw, 9rem)',
-            fontWeight: 700,
-            color: 'var(--color-secondary)',
-            letterSpacing: '0.05em',
-            lineHeight: 0.9,
-            margin: '0 0 32px',
-            textTransform: 'uppercase',
-          }}>
-            {tenant.brand_name}
-          </h1>
-
-          {tenant.tagline && (
-            <p style={{
-              fontFamily: 'var(--font-body)',
-              fontSize: '0.85rem',
-              letterSpacing: '0.25em',
-              textTransform: 'uppercase',
-              color: 'var(--color-secondary)',
-              opacity: 0.45,
-              marginBottom: '48px',
-            }}>
-              {tenant.tagline}
-            </p>
-          )}
-
-          <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link href="/shop" style={{
-              display: 'inline-block',
-              backgroundColor: 'var(--color-accent)',
-              color: '#fff',
-              fontFamily: 'var(--font-body)',
-              fontSize: '0.7rem',
-              letterSpacing: '0.18em',
-              textTransform: 'uppercase',
-              padding: '16px 40px',
-              textDecoration: 'none',
-              fontWeight: 600,
-            }}>
-              Shop Now
-            </Link>
-            <Link href="/shop?category=new-arrivals" style={{
-              display: 'inline-block',
-              border: '1px solid rgba(255,255,255,0.25)',
-              color: 'var(--color-secondary)',
-              fontFamily: 'var(--font-body)',
-              fontSize: '0.7rem',
-              letterSpacing: '0.18em',
-              textTransform: 'uppercase',
-              padding: '16px 40px',
-              textDecoration: 'none',
-              fontWeight: 400,
-              opacity: 0.7,
-            }}>
-              New Arrivals
-            </Link>
-          </div>
-        </div>
-
-        {/* Scroll indicator */}
-        <div style={{
-          position: 'absolute',
-          bottom: '32px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '8px',
-          opacity: 0.3,
-        }}>
-          <div style={{
-            width: '1px',
-            height: '48px',
-            backgroundColor: 'var(--color-secondary)',
-          }} />
-          <p style={{
-            fontFamily: 'var(--font-body)',
-            fontSize: '0.6rem',
-            letterSpacing: '0.2em',
-            textTransform: 'uppercase',
-            color: 'var(--color-secondary)',
-            margin: 0,
-          }}>Scroll</p>
-        </div>
-      </section>
-
-      {/* ── New Arrivals ── */}
+            {/* ── New Arrivals ── */}
       {newArrivals.length > 0 && (
         <section style={{ padding: '80px 32px', maxWidth: '1200px', margin: '0 auto' }}>
           <div style={{
