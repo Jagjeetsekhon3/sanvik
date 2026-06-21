@@ -4,6 +4,7 @@ import { getTenantById } from '@/lib/tenant'
 import { getFeaturedProducts, getNewArrivals } from '@/lib/store/products'
 import { notFound } from 'next/navigation'
 import ProductCard from '@/components/store/ProductCard'
+import InstagramFeed from '@/components/store/InstagramFeed'
 
 export default async function HomePage() {
   const headersList = headers()
@@ -261,6 +262,9 @@ export default async function HomePage() {
           About us
         </Link>
       </section>
+
+      {/* ── Instagram Feed ── */}
+      <InstagramFeed tenant={tenant} />
     </div>
   )
 }

@@ -191,3 +191,64 @@ export interface TenantContext {
   tenant: Tenant
   isLoaded: boolean
 }
+
+// ─── MENU ─────────────────────────────────────────────────────────
+
+export interface MenuItem {
+  id: string
+  label: string
+  href: string
+  target?: '_blank' | '_self'
+  children?: MenuItem[]   // dropdown items
+}
+
+export interface MenuConfig {
+  id?: string
+  tenant_id: string
+  items: MenuItem[]
+}
+
+// ─── HEADER ───────────────────────────────────────────────────────
+
+export interface HeaderConfig {
+  id?: string
+  tenant_id: string
+  logo_type: 'text' | 'image'
+  logo_text: string | null
+  logo_image_url: string | null
+  logo_size: number
+  sticky: boolean
+  show_search: boolean
+  show_announcement: boolean
+  announcement_text: string | null
+  announcement_bg: string
+  announcement_color: string
+  bg_color: string
+  bg_scrolled: string
+  text_color: string
+  border_bottom: boolean
+  height: number
+}
+
+// ─── FOOTER ───────────────────────────────────────────────────────
+
+export interface FooterColumn {
+  id: string
+  title: string
+  links: { label: string; href: string }[]
+}
+
+export interface FooterConfig {
+  id?: string
+  tenant_id: string
+  bg_color: string
+  text_color: string
+  show_logo: boolean
+  show_tagline: boolean
+  show_socials: boolean
+  show_newsletter: boolean
+  newsletter_text: string
+  columns: FooterColumn[]
+  bottom_text: string | null
+  show_payments: boolean
+}

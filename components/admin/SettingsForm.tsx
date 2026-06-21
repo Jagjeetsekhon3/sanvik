@@ -36,6 +36,10 @@ export default function SettingsForm({ tenant }: { tenant: Tenant }) {
   const [about, setAbout] = useState(tenant.about || '')
   const [contactEmail, setContactEmail] = useState(tenant.contact_email || '')
   const [instagramUrl, setInstagramUrl] = useState(tenant.instagram_url || '')
+  const [instagramUsername, setInstagramUsername] = useState((tenant as Record<string, unknown>).instagram_username as string || '')
+  const [instagramAccessToken, setInstagramAccessToken] = useState((tenant as Record<string, unknown>).instagram_access_token as string || '')
+  const [instagramShowFeed, setInstagramShowFeed] = useState((tenant as Record<string, unknown>).instagram_show_feed as boolean || false)
+  const [instagramFeedTitle, setInstagramFeedTitle] = useState((tenant as Record<string, unknown>).instagram_feed_title as string || 'Follow Us on Instagram')
   const [logoUrl, setLogoUrl] = useState(tenant.logo_url || '')
   const [primaryColor, setPrimaryColor] = useState(tenant.primary_color)
   const [secondaryColor, setSecondaryColor] = useState(tenant.secondary_color)
@@ -68,6 +72,10 @@ export default function SettingsForm({ tenant }: { tenant: Tenant }) {
       about,
       contact_email: contactEmail,
       instagram_url: instagramUrl,
+      instagram_username: instagramUsername,
+      instagram_access_token: instagramAccessToken,
+      instagram_show_feed: instagramShowFeed,
+      instagram_feed_title: instagramFeedTitle,
       logo_url: logoUrl,
       primary_color: primaryColor,
       secondary_color: secondaryColor,
@@ -227,6 +235,24 @@ export default function SettingsForm({ tenant }: { tenant: Tenant }) {
         <div>
           <label style={LABEL}>PayPal Client ID</label>
           <input style={INPUT} value={paypalClientId} onChange={e => setPaypalClientId(e.target.value)} placeholder="PayPal client ID" />
+        </div>
+        {/* Instagram Feed */}
+        <div style={{ marginTop: '20px', borderTop: '1px solid #f0f0f0', paddingTop: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+            <input type='checkbox' checked={instagramShowFeed} onChange={e => setInstagramShowFeed(e.target.checked)} style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
+            <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', color: '#444' }}>Show Instagram feed on homepage</span>
+          </div>
+          {instagramShowFeed && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+              <div><label style={LABEL}>Instagram Username</label><input style={INPUT} value={instagramUsername} onChange={e => setInstagramUsername(e.target.value)} placeholder='@yourbrand' /></div>
+              <div><label style={LABEL}>Feed Section Title</label><input style={INPUT} value={instagramFeedTitle} onChange={e => setInstagramFeedTitle(e.target.value)} placeholder='Follow Us on Instagram' /></div>
+              <div style={{ gridColumn: '1 / -1' }}>
+                <label style={LABEL}>Instagram Access Token (for live feed)</label>
+                <input style={{ ...INPUT, fontFamily: 'monospace' }} type='password' value={instagramAccessToken} onChange={e => setInstagramAccessToken(e.target.value)} placeholder='Get from developers.facebook.com' />
+                <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.7rem', color: '#aaa', margin: '4px 0 0' }}>Optional — without token, section shows username + follow button only</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
