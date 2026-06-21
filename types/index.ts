@@ -22,6 +22,10 @@ export interface Tenant {
   paypal_client_id: string | null
   paypal_client_secret: string | null
   cod_enabled: boolean
+  instagram_username: string | null
+  instagram_access_token: string | null
+  instagram_show_feed: boolean
+  instagram_feed_title: string | null
   cloudinary_cloud_name: string | null
   cloudinary_api_key: string | null
   cloudinary_api_secret: string | null
