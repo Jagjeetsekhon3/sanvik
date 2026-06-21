@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServiceClient } from '@/lib/supabase/server'
+
+export const dynamic = 'force-dynamic'
+
+const sb = () => ({
+  url: process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  key: process.env.SUPABASE_SERVICE_ROLE_KEY!,
+})
 
 export async function POST(request: NextRequest) {
   try {
@@ -7,20 +13,31 @@ export async function POST(request: NextRequest) {
     if (!tenantId) return NextResponse.json({ error: 'No tenant' }, { status: 400 })
 
     const { product, variants } = await request.json()
-    const supabase = createServiceClient()
+    const { url, key } = sb()
 
-    const { data: newProduct, error } = await supabase
-      .from('products')
-      .insert({ ...product, tenant_id: tenantId })
-      .select()
-      .single()
+    // Insert product
+    const productRes = await fetch(`${url}/rest/v1/products`, {
+      method: 'POST',
+      headers: { 'apikey': key, 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+      body: JSON.stringify({ ...product, tenant_id: tenantId }),
+    })
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+    const productData = await productRes.json()
+    if (!productRes.ok) return NextResponse.json({ error: productData.message || 'Failed to create product' }, { status: 400 })
 
-    if (variants?.length) {
-      await supabase.from('product_variants').insert(
-        variants.map((v: Record<string, unknown>) => ({ ...v, product_id: newProduct.id }))
-      )
+    const newProduct = productData[0]
+
+    // Insert variants
+    if (variants?.length > 0) {
+      const variantRes = await fetch(`${url}/rest/v1/product_variants`, {
+        method: 'POST',
+        headers: { 'apikey': key, 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+        body: JSON.stringify(variants.map((v: Record<string, unknown>) => ({ ...v, product_id: newProduct.id }))),
+      })
+      if (!variantRes.ok) {
+        const err = await variantRes.json()
+        console.error('Variant insert error:', err)
+      }
     }
 
     return NextResponse.json({ product: newProduct })
@@ -35,27 +52,37 @@ export async function PUT(request: NextRequest) {
     if (!tenantId) return NextResponse.json({ error: 'No tenant' }, { status: 400 })
 
     const { product, variants, productId } = await request.json()
-    const supabase = createServiceClient()
+    const { url, key } = sb()
 
-    const { data: updated, error } = await supabase
-      .from('products')
-      .update(product)
-      .eq('id', productId)
-      .eq('tenant_id', tenantId)
-      .select()
-      .single()
+    // Update product
+    const productRes = await fetch(`${url}/rest/v1/products?id=eq.${productId}&tenant_id=eq.${tenantId}`, {
+      method: 'PATCH',
+      headers: { 'apikey': key, 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+      body: JSON.stringify(product),
+    })
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+    const productData = await productRes.json()
+    if (!productRes.ok) return NextResponse.json({ error: productData.message || 'Failed to update product' }, { status: 400 })
 
-    // Replace variants
-    await supabase.from('product_variants').delete().eq('product_id', productId)
-    if (variants?.length) {
-      await supabase.from('product_variants').insert(
-        variants.map((v: Record<string, unknown>) => ({ ...v, product_id: productId }))
-      )
+    // Delete old variants then insert new ones
+    await fetch(`${url}/rest/v1/product_variants?product_id=eq.${productId}`, {
+      method: 'DELETE',
+      headers: { 'apikey': key, 'Authorization': `Bearer ${key}` },
+    })
+
+    if (variants?.length > 0) {
+      const variantRes = await fetch(`${url}/rest/v1/product_variants`, {
+        method: 'POST',
+        headers: { 'apikey': key, 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+        body: JSON.stringify(variants.map((v: Record<string, unknown>) => ({ ...v, product_id: productId }))),
+      })
+      if (!variantRes.ok) {
+        const err = await variantRes.json()
+        console.error('Variant update error:', err)
+      }
     }
 
-    return NextResponse.json({ product: updated })
+    return NextResponse.json({ product: productData[0] })
   } catch (err: unknown) {
     return NextResponse.json({ error: err instanceof Error ? err.message : 'Error' }, { status: 500 })
   }
@@ -67,9 +94,20 @@ export async function DELETE(request: NextRequest) {
     if (!tenantId) return NextResponse.json({ error: 'No tenant' }, { status: 400 })
 
     const { productId } = await request.json()
-    const supabase = createServiceClient()
+    const { url, key } = sb()
 
-    await supabase.from('products').delete().eq('id', productId).eq('tenant_id', tenantId)
+    // Delete variants first
+    await fetch(`${url}/rest/v1/product_variants?product_id=eq.${productId}`, {
+      method: 'DELETE',
+      headers: { 'apikey': key, 'Authorization': `Bearer ${key}` },
+    })
+
+    // Delete product
+    await fetch(`${url}/rest/v1/products?id=eq.${productId}&tenant_id=eq.${tenantId}`, {
+      method: 'DELETE',
+      headers: { 'apikey': key, 'Authorization': `Bearer ${key}` },
+    })
+
     return NextResponse.json({ success: true })
   } catch (err: unknown) {
     return NextResponse.json({ error: err instanceof Error ? err.message : 'Error' }, { status: 500 })

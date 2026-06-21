@@ -1,103 +1,110 @@
-import { createServiceClient } from '@/lib/supabase/server'
 import { Product, ProductVariant } from '@/types'
 
-// Fetch featured products for homepage
+const sb = () => ({
+  url: process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  key: process.env.SUPABASE_SERVICE_ROLE_KEY!,
+})
+
+async function fetchVariants(productIds: string[]): Promise<ProductVariant[]> {
+  if (productIds.length === 0) return []
+  const { url, key } = sb()
+  const res = await fetch(
+    `${url}/rest/v1/product_variants?product_id=in.(${productIds.join(',')})`,
+    { headers: { 'apikey': key, 'Authorization': `Bearer ${key}` }, cache: 'no-store' }
+  )
+  const data = await res.json()
+  return Array.isArray(data) ? data : []
+}
+
+function attachVariants(products: Product[], variants: ProductVariant[]): Product[] {
+  return products.map(p => ({
+    ...p,
+    variants: variants.filter(v => v.product_id === p.id),
+  }))
+}
+
 export async function getFeaturedProducts(tenantId: string, limit = 8): Promise<Product[]> {
-  const supabase = createServiceClient()
-  const { data } = await supabase
-    .from('products')
-    .select('*, variants:product_variants(*)')
-    .eq('tenant_id', tenantId)
-    .eq('is_active', true)
-    .eq('is_featured', true)
-    .order('created_at', { ascending: false })
-    .limit(limit)
-  return (data || []) as Product[]
+  const { url, key } = sb()
+  const res = await fetch(
+    `${url}/rest/v1/products?tenant_id=eq.${tenantId}&is_active=eq.true&is_featured=eq.true&order=created_at.desc&limit=${limit}`,
+    { headers: { 'apikey': key, 'Authorization': `Bearer ${key}` }, cache: 'no-store' }
+  )
+  const products = await res.json()
+  if (!Array.isArray(products) || products.length === 0) return []
+  const variants = await fetchVariants(products.map((p: Product) => p.id))
+  return attachVariants(products, variants)
 }
 
-// Fetch new arrivals for homepage
 export async function getNewArrivals(tenantId: string, limit = 4): Promise<Product[]> {
-  const supabase = createServiceClient()
-  const { data } = await supabase
-    .from('products')
-    .select('*, variants:product_variants(*)')
-    .eq('tenant_id', tenantId)
-    .eq('is_active', true)
-    .order('created_at', { ascending: false })
-    .limit(limit)
-  return (data || []) as Product[]
+  const { url, key } = sb()
+  const res = await fetch(
+    `${url}/rest/v1/products?tenant_id=eq.${tenantId}&is_active=eq.true&order=created_at.desc&limit=${limit}`,
+    { headers: { 'apikey': key, 'Authorization': `Bearer ${key}` }, cache: 'no-store' }
+  )
+  const products = await res.json()
+  if (!Array.isArray(products) || products.length === 0) return []
+  const variants = await fetchVariants(products.map((p: Product) => p.id))
+  return attachVariants(products, variants)
 }
 
-// Fetch all products with optional filters
 export async function getProducts(
   tenantId: string,
-  filters?: {
-    category?: string
-    search?: string
-    minPrice?: number
-    maxPrice?: number
-    limit?: number
-    offset?: number
-  }
+  filters?: { category?: string; search?: string; minPrice?: number; maxPrice?: number; limit?: number; offset?: number }
 ): Promise<{ products: Product[]; total: number }> {
-  const supabase = createServiceClient()
-  let query = supabase
-    .from('products')
-    .select('*, variants:product_variants(*)', { count: 'exact' })
-    .eq('tenant_id', tenantId)
-    .eq('is_active', true)
+  const { url, key } = sb()
+  const limit = filters?.limit || 24
+  const offset = filters?.offset || 0
+
+  let query = `${url}/rest/v1/products?tenant_id=eq.${tenantId}&is_active=eq.true&order=created_at.desc`
 
   if (filters?.category && filters.category !== 'all') {
     if (filters.category === 'sale') {
-      query = query.not('compare_price', 'is', null)
-    } else if (filters.category === 'new-arrivals') {
-      query = query.order('created_at', { ascending: false })
+      query += `&compare_price=not.is.null`
     } else {
-      query = query.ilike('category', `%${filters.category}%`)
+      query += `&category=ilike.*${encodeURIComponent(filters.category)}*`
     }
   }
 
-  if (filters?.search) {
-    query = query.ilike('name', `%${filters.search}%`)
-  }
+  if (filters?.search) query += `&name=ilike.*${encodeURIComponent(filters.search)}*`
+  if (filters?.minPrice !== undefined) query += `&base_price=gte.${filters.minPrice}`
+  if (filters?.maxPrice !== undefined) query += `&base_price=lte.${filters.maxPrice}`
 
-  if (filters?.minPrice !== undefined) {
-    query = query.gte('base_price', filters.minPrice)
-  }
+  query += `&limit=${limit}&offset=${offset}`
 
-  if (filters?.maxPrice !== undefined) {
-    query = query.lte('base_price', filters.maxPrice)
-  }
+  const res = await fetch(query, {
+    headers: { 'apikey': key, 'Authorization': `Bearer ${key}`, 'Prefer': 'count=exact' },
+    cache: 'no-store',
+  })
 
-  query = query
-    .order('created_at', { ascending: false })
-    .range(filters?.offset || 0, (filters?.offset || 0) + (filters?.limit || 24) - 1)
+  const products = await res.json()
+  const countHeader = res.headers.get('content-range')
+  const total = countHeader ? parseInt(countHeader.split('/')[1] || '0') : 0
 
-  const { data, count } = await query
-  return { products: (data || []) as Product[], total: count || 0 }
+  if (!Array.isArray(products) || products.length === 0) return { products: [], total: 0 }
+  const variants = await fetchVariants(products.map((p: Product) => p.id))
+  return { products: attachVariants(products, variants), total }
 }
 
-// Fetch single product by slug
 export async function getProductBySlug(tenantId: string, slug: string): Promise<Product | null> {
-  const supabase = createServiceClient()
-  const { data } = await supabase
-    .from('products')
-    .select('*, variants:product_variants(*)')
-    .eq('tenant_id', tenantId)
-    .eq('slug', slug)
-    .eq('is_active', true)
-    .single()
-  return data as Product | null
+  const { url, key } = sb()
+  const res = await fetch(
+    `${url}/rest/v1/products?tenant_id=eq.${tenantId}&slug=eq.${slug}&is_active=eq.true&limit=1`,
+    { headers: { 'apikey': key, 'Authorization': `Bearer ${key}` }, cache: 'no-store' }
+  )
+  const data = await res.json()
+  const product = data?.[0]
+  if (!product) return null
+  const variants = await fetchVariants([product.id])
+  return { ...product, variants }
 }
 
-// Get all categories for a tenant
 export async function getCategories(tenantId: string): Promise<string[]> {
-  const supabase = createServiceClient()
-  const { data } = await supabase
-    .from('products')
-    .select('category')
-    .eq('tenant_id', tenantId)
-    .eq('is_active', true)
-  const cats = [...new Set((data || []).map((p: { category: string }) => p.category))]
+  const { url, key } = sb()
+  const res = await fetch(
+    `${url}/rest/v1/products?tenant_id=eq.${tenantId}&is_active=eq.true&select=category`,
+    { headers: { 'apikey': key, 'Authorization': `Bearer ${key}` }, cache: 'no-store' }
+  )
+  const data = await res.json()
+  const cats = [...new Set((Array.isArray(data) ? data : []).map((p: { category: string }) => p.category))]
   return cats.filter(Boolean)
 }
