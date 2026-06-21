@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { Product } from '@/types'
 import { useTenant } from '@/components/TenantProvider'
+import WishlistButton from './WishlistButton'
 
 export default function ProductCard({ product }: { product: Product }) {
   const tenant = useTenant()
@@ -106,6 +107,11 @@ export default function ProductCard({ product }: { product: Product }) {
             </span>
           )}
         </div>
+      </div>
+
+      {/* Wishlist */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
+        <WishlistButton productId={product.id} size="small" />
       </div>
 
       {/* Info */}

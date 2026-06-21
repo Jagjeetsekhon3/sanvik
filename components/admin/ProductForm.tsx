@@ -45,9 +45,15 @@ export default function ProductForm({ product, tenantId }: {
       : [{ size: '', color: '', color_hex: '#000000', stock: 0, sku: '', price_override: '' }]
   )
 
+  const [sizeGuides, setSizeGuides] = useState<{id:string;name:string}[]>([])
+  const [selectedSizeGuideId, setSelectedSizeGuideId] = useState<string>(String((product as Record<string,unknown>)?.size_guide_id || ''))
+
   useEffect(() => {
     fetch('/api/admin/categories').then(r => r.json()).then(data => {
       setAllCategories(Array.isArray(data) ? data : [])
+    })
+    fetch('/api/admin/size-guides').then(r => r.json()).then(data => {
+      setSizeGuides(Array.isArray(data) ? data.map((g: {id:string;name:string}) => ({id: g.id, name: g.name})) : [])
     })
   }, [])
 
@@ -95,6 +101,7 @@ export default function ProductForm({ product, tenantId }: {
       is_active: isActive,
       tags: tags.split(',').map(t => t.trim()).filter(Boolean),
       currency: tenant.currency === 'USD' ? 'USD' : 'INR',
+      size_guide_id: selectedSizeGuideId || null,
     }
 
     const cleanVariants = variants
@@ -244,6 +251,26 @@ export default function ProductForm({ product, tenantId }: {
             <span key={h} style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.6rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#bbb' }}>{h}</span>
           ))}
         </div>
+        {/* Size guide selector */}
+        <div style={{ marginBottom: '14px', paddingBottom: '14px', borderBottom: '1px solid #f5f5f5' }}>
+          <label style={LABEL}>Size Guide (optional)</label>
+          <select
+            style={{ ...INPUT, cursor: 'pointer' }}
+            value={selectedSizeGuideId}
+            onChange={e => setSelectedSizeGuideId(e.target.value)}
+          >
+            <option value="">No size guide</option>
+            {sizeGuides.map(g => (
+              <option key={g.id} value={g.id}>{g.name}</option>
+            ))}
+          </select>
+          {sizeGuides.length === 0 && (
+            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.7rem', color: '#aaa', margin: '4px 0 0' }}>
+              <a href="/master-admin/size-guides" target="_blank" style={{ color: '#3b82f6' }}>Create size guides</a> first to assign them here
+            </p>
+          )}
+        </div>
+
         {variants.map((v, i) => (
           <div key={i} style={{ display: 'grid', gridTemplateColumns: '80px 100px 50px 70px 100px 100px 36px', gap: '8px', marginBottom: '8px', alignItems: 'center' }}>
             <input style={{ ...INPUT, padding: '8px 10px' }} value={v.size} onChange={e => updateVariant(i, 'size', e.target.value)} placeholder="S/M/L" />

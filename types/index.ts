@@ -317,3 +317,27 @@ export interface HomeSection {
   content?: string
   align?: 'left' | 'center' | 'right'
 }
+
+// ─── WISHLIST ─────────────────────────────────────────────────────
+
+export interface WishlistItem {
+  id: string
+  tenant_id: string
+  customer_id: string | null
+  session_id: string | null
+  product_id: string
+  created_at: string
+  product?: Product
+}
+
+// ─── SIZE GUIDE ───────────────────────────────────────────────────
+
+export interface SizeGuide {
+  id: string
+  tenant_id: string
+  name: string
+  headers: string[]
+  rows: string[][]
+  description: string | null
+  created_at: string
+}

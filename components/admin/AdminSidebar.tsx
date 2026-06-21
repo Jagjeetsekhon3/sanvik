@@ -20,6 +20,7 @@ const NAV = [
   { label: 'Menu', href: '/master-admin/menu', icon: '≡' },
   { label: 'Header', href: '/master-admin/header', icon: '▬' },
   { label: 'Footer', href: '/master-admin/footer', icon: '▭' },
+  { label: 'Size Guides', href: '/master-admin/size-guides', icon: '📏' },
   { label: 'Settings', href: '/master-admin/settings', icon: '◌' },
 ]
 
