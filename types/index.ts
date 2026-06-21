@@ -22,6 +22,10 @@ export interface Tenant {
   paypal_client_id: string | null
   paypal_client_secret: string | null
   cod_enabled: boolean
+  cloudinary_cloud_name: string | null
+  cloudinary_api_key: string | null
+  cloudinary_api_secret: string | null
+  cloudinary_upload_preset: string | null
   active: boolean
   created_at: string
   // Store metadata

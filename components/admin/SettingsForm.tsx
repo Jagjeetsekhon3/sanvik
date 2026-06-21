@@ -51,6 +51,10 @@ export default function SettingsForm({ tenant }: { tenant: Tenant }) {
   const [stripePublishable, setStripePublishable] = useState(tenant.stripe_publishable_key || '')
   const [stripeSecret, setStripeSecret] = useState(tenant.stripe_secret_key || '')
   const [paypalClientId, setPaypalClientId] = useState(tenant.paypal_client_id || '')
+  const [cloudinaryCloudName, setCloudinaryCloudName] = useState(tenant.cloudinary_cloud_name || '')
+  const [cloudinaryApiKey, setCloudinaryApiKey] = useState(tenant.cloudinary_api_key || '')
+  const [cloudinaryApiSecret, setCloudinaryApiSecret] = useState(tenant.cloudinary_api_secret || '')
+  const [cloudinaryUploadPreset, setCloudinaryUploadPreset] = useState(tenant.cloudinary_upload_preset || '')
   const [returnPolicy, setReturnPolicy] = useState(tenant.return_policy || '')
   const [shippingPolicy, setShippingPolicy] = useState(tenant.shipping_policy || '')
 
@@ -79,6 +83,10 @@ export default function SettingsForm({ tenant }: { tenant: Tenant }) {
       stripe_publishable_key: stripePublishable,
       stripe_secret_key: stripeSecret,
       paypal_client_id: paypalClientId,
+      cloudinary_cloud_name: cloudinaryCloudName,
+      cloudinary_api_key: cloudinaryApiKey,
+      cloudinary_api_secret: cloudinaryApiSecret,
+      cloudinary_upload_preset: cloudinaryUploadPreset,
       return_policy: returnPolicy,
       shipping_policy: shippingPolicy,
     }
@@ -219,6 +227,34 @@ export default function SettingsForm({ tenant }: { tenant: Tenant }) {
         <div>
           <label style={LABEL}>PayPal Client ID</label>
           <input style={INPUT} value={paypalClientId} onChange={e => setPaypalClientId(e.target.value)} placeholder="PayPal client ID" />
+        </div>
+      </div>
+
+      {/* Cloudinary */}
+      <div style={SECTION}>
+        <h2 style={SECTION_TITLE}>Cloudinary (Media)</h2>
+        <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.78rem', color: '#888', margin: '0 0 16px' }}>
+          Required for Media Gallery — get keys from cloudinary.com/console
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+          <div>
+            <label style={LABEL}>Cloud Name</label>
+            <input style={INPUT} value={cloudinaryCloudName} onChange={e => setCloudinaryCloudName(e.target.value)} placeholder="your-cloud-name" />
+          </div>
+          <div>
+            <label style={LABEL}>Upload Preset (optional)</label>
+            <input style={INPUT} value={cloudinaryUploadPreset} onChange={e => setCloudinaryUploadPreset(e.target.value)} placeholder="ml_default" />
+          </div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div>
+            <label style={LABEL}>API Key</label>
+            <input style={INPUT} value={cloudinaryApiKey} onChange={e => setCloudinaryApiKey(e.target.value)} placeholder="123456789012345" />
+          </div>
+          <div>
+            <label style={LABEL}>API Secret</label>
+            <input style={{ ...INPUT, fontFamily: 'monospace' }} type="password" value={cloudinaryApiSecret} onChange={e => setCloudinaryApiSecret(e.target.value)} placeholder="••••••••" />
+          </div>
         </div>
       </div>
 
