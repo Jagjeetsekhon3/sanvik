@@ -40,8 +40,8 @@ export default function ProductForm({ product, tenantId }: {
   const [isActive, setIsActive] = useState(product ? Boolean(product.is_active) : true)
   const [tags, setTags] = useState(((product?.tags as string[]) || []).join(', '))
   const [variants, setVariants] = useState<Variant[]>(
-    (product?.variants as Variant[])?.length
-      ? (product.variants as Variant[])
+    ((product?.variants as Variant[]) || []).length > 0
+      ? (product?.variants as Variant[])
       : [{ size: '', color: '', color_hex: '#000000', stock: 0, sku: '', price_override: '' }]
   )
 
