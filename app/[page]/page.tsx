@@ -28,7 +28,7 @@ function renderMarkdown(md: string): string {
     .replace(/_(.+?)_/g, '<em>$1</em>')
     .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" style="color:var(--color-accent);text-decoration:underline">$1</a>')
     .replace(/^- (.+)$/gm, '<li>$1</li>')
-    .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+    .replace(/(<li>[\s\S]*<\/li>)/, '<ul>$1</ul>')
     .replace(/^---$/gm, '<hr style="border:none;border-top:1px solid rgba(0,0,0,0.08);margin:32px 0">')
     .split('\n\n')
     .map(para => {
