@@ -33,9 +33,9 @@ export default function ProductForm({ product, tenantId }: {
   const [basePrice, setBasePrice] = useState(String(product?.base_price || ''))
   const [comparePrice, setComparePrice] = useState(String(product?.compare_price || ''))
   const [images, setImages] = useState<string[]>(
-    (product?.images as string[])?.length ? (product.images as string[]) : ['', '', '', '']
+    ((product?.images as string[]) || []).length > 0 ? (product?.images as string[]) : ['', '', '', '']
   )
-  const [instagramVideoUrl, setInstagramVideoUrl] = useState(String((product as Record<string,unknown>)?.instagram_video_url || ''))
+  const [instagramVideoUrl, setInstagramVideoUrl] = useState(product?.instagram_video_url ? String(product.instagram_video_url) : '')
   const [isFeatured, setIsFeatured] = useState(Boolean(product?.is_featured))
   const [isActive, setIsActive] = useState(product ? Boolean(product.is_active) : true)
   const [tags, setTags] = useState(((product?.tags as string[]) || []).join(', '))
