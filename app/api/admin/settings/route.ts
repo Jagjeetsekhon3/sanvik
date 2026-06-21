@@ -1,42 +1,63 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServiceClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
 
 export const dynamic = 'force-dynamic'
 
 export async function PUT(request: NextRequest) {
-  const tenantId = request.headers.get('x-tenant-id')
-  if (!tenantId) return NextResponse.json({ error: 'No tenant' }, { status: 400 })
+  try {
+    const tenantId = request.headers.get('x-tenant-id')
+    const updates = await request.json()
 
-  const updates = await request.json()
-  const supabase = createServiceClient()
+    // Use raw fetch to Supabase — bypasses any Next.js caching completely
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-  const { error } = await supabase
-    .from('tenants')
-    .update(updates)
-    .eq('id', tenantId)
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
-
-  // Read back what was saved to confirm
-  const { data: saved } = await supabase
-    .from('tenants')
-    .select('id, brand_name, primary_color, accent_color')
-    .eq('id', tenantId)
-    .single()
-
-  // Bust all caches
-  revalidatePath('/', 'layout')
-  revalidatePath('/master-admin', 'layout')
-  revalidatePath('/master-admin/settings', 'page')
-
-  return NextResponse.json(
-    { success: true, saved },
-    {
-      headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate',
-        'Pragma': 'no-cache',
-      }
+    if (!supabaseUrl || !serviceKey) {
+      return NextResponse.json({
+        error: 'Missing env vars',
+        hasUrl: !!supabaseUrl,
+        hasKey: !!serviceKey,
+      }, { status: 500 })
     }
-  )
+
+    if (!tenantId) {
+      return NextResponse.json({ error: 'No tenant ID' }, { status: 400 })
+    }
+
+    // Direct REST API call to Supabase — no SDK, no caching
+    const res = await fetch(
+      `${supabaseUrl}/rest/v1/tenants?id=eq.${tenantId}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'apikey': serviceKey,
+          'Authorization': `Bearer ${serviceKey}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=representation',
+        },
+        body: JSON.stringify(updates),
+        cache: 'no-store',
+      }
+    )
+
+    const data = await res.json()
+
+    if (!res.ok) {
+      return NextResponse.json({ error: 'Supabase error', detail: data }, { status: 400 })
+    }
+
+    return NextResponse.json(
+      { success: true, saved: data[0] },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+          'Pragma': 'no-cache',
+          'Surrogate-Control': 'no-store',
+        }
+      }
+    )
+  } catch (err: unknown) {
+    return NextResponse.json({
+      error: err instanceof Error ? err.message : 'Unknown error'
+    }, { status: 500 })
+  }
 }
