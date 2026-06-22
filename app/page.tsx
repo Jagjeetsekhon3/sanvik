@@ -27,7 +27,7 @@ export default async function HomePage() {
 
             {/* ── New Arrivals ── */}
       {newArrivals.length > 0 && (
-        <section style={{ padding: '80px 32px', maxWidth: '1200px', margin: '0 auto' }}>
+        <section className="fashn-section" style={{ padding: '80px 32px', maxWidth: '1200px', margin: '0 auto' }}>
           <div style={{
             display: 'flex', alignItems: 'baseline',
             justifyContent: 'space-between', marginBottom: '40px',
@@ -56,7 +56,7 @@ export default async function HomePage() {
             display: 'grid',
             gridTemplateColumns: 'repeat(4, 1fr)',
             gap: '20px',
-          }}>
+          }} className="fashn-product-grid-4">
             {newArrivals.map(product => (
               <ProductCard key={product.id} product={product} />
             ))}
@@ -92,7 +92,7 @@ export default async function HomePage() {
               display: 'grid',
               gridTemplateColumns: 'repeat(4, 1fr)',
               gap: '20px',
-            }}>
+            }} className="fashn-product-grid-4">
               {featured.map(product => (
                 <ProductCard key={product.id} product={product} />
               ))}

@@ -7,6 +7,7 @@ import Navbar from '@/components/store/Navbar'
 import Footer from '@/components/store/Footer'
 import { Tenant } from '@/types'
 
+import MOBILE_CSS from '@/lib/mobile-css'
 export const dynamic = 'force-dynamic'
 export const fetchCache = 'force-no-store'
 export const revalidate = 0
@@ -50,6 +51,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en">
       <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
         <title>{tenant.brand_name}</title>
         <meta name="description" content={tenant.tagline || tenant.brand_name} />
         <meta httpEquiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
@@ -62,7 +64,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           href={`https://fonts.googleapis.com/css2?family=${tenant.font_heading.replace(/ /g, '+')}:wght@400;500;600;700&family=${tenant.font_body.replace(/ /g, '+')}:wght@300;400;500&display=swap`}
           rel="stylesheet"
         />
-        <style dangerouslySetInnerHTML={{ __html: cssVars }} />
+        <style dangerouslySetInnerHTML={{ __html: cssVars + MOBILE_CSS }} />
       </head>
       <body>
         <TenantProvider tenant={tenant}>

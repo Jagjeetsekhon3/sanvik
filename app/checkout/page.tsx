@@ -210,7 +210,7 @@ export default function CheckoutPage() {
         Checkout
       </h1>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '60px', alignItems: 'start' }}>
+      <div className="fashn-checkout-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '60px', alignItems: 'start' }}>
 
         {/* ── Left: Steps ── */}
         <div>
@@ -280,7 +280,7 @@ export default function CheckoutPage() {
                 <input style={INPUT_STYLE} value={address.line2 || ''} onChange={e => updateAddress('line2', e.target.value)} placeholder="Street / Locality / Area" />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+              <div className="fashn-checkout-3col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '16px' }}>
                 <div>
                   <label style={LABEL_STYLE}>City *</label>
                   <input style={INPUT_STYLE} value={address.city} onChange={e => updateAddress('city', e.target.value)} placeholder="Gurugram" />
@@ -416,7 +416,7 @@ export default function CheckoutPage() {
         </div>
 
         {/* ── Right: Order Summary ── */}
-        <div style={{ position: 'sticky', top: '96px' }}>
+        <div className="fashn-checkout-summary" style={{ position: 'sticky', top: '96px' }}>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.7rem', letterSpacing: '0.15em', textTransform: 'uppercase', opacity: 0.4, margin: '0 0 20px' }}>
             Order Summary
           </p>

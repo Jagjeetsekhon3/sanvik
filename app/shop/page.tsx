@@ -66,7 +66,7 @@ export default async function ShopPage({ searchParams }: PageProps) {
         </p>
       </div>
 
-      <div style={{ display: 'flex', gap: '40px', alignItems: 'flex-start' }}>
+      <div className="fashn-shop-layout" style={{ display: 'flex', gap: '40px', alignItems: 'flex-start' }}>
         {/* Sidebar filters */}
         <ShopFilters categories={categories} currentCategory={searchParams.category} />
 

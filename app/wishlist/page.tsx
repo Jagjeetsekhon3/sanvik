@@ -42,7 +42,7 @@ export default function WishlistPage() {
           <Link href="/shop" style={{ fontFamily: 'var(--font-body)', fontSize: '0.8rem', color: 'var(--color-accent)', textDecoration: 'none' }}>Browse products</Link>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px' }}>
+        <div className="fashn-product-grid-4 fashn-wishlist-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px' }}>
           {products.map(product => (
             <div key={product.id} style={{ position: 'relative' }}>
               <div style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 1 }}>

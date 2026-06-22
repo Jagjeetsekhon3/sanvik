@@ -8,7 +8,7 @@ export default function Footer({ tenant }: { tenant: Tenant }) {
       padding: '60px 32px 40px',
       marginTop: '80px',
     }}>
-      <div style={{
+      <div className="fashn-footer-grid" style={{
         maxWidth: '1200px',
         margin: '0 auto',
         display: 'grid',
@@ -88,7 +88,7 @@ export default function Footer({ tenant }: { tenant: Tenant }) {
         </div>
       </div>
 
-      <div style={{
+      <div className="fashn-footer-bottom" style={{
         maxWidth: '1200px', margin: '40px auto 0',
         borderTop: '1px solid rgba(0,0,0,0.06)', paddingTop: '24px',
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',

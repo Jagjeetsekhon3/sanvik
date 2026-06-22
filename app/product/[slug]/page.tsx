@@ -39,7 +39,7 @@ export default async function ProductPage({ params }: PageProps) {
   return (
     <div>
       {/* Main product section */}
-      <div style={{
+      <div className="fashn-pdp" style={{
         maxWidth: '1200px', margin: '0 auto',
         padding: '40px 32px',
         display: 'grid',
@@ -51,7 +51,7 @@ export default async function ProductPage({ params }: PageProps) {
         <ProductGallery images={product.images} name={product.name} />
 
         {/* Right — Info */}
-        <div style={{ position: 'sticky', top: '96px' }}>
+        <div className="fashn-pdp-sticky" style={{ position: 'sticky', top: '96px' }}>
           {/* Breadcrumb */}
           <p style={{
             fontFamily: 'var(--font-body)', fontSize: '0.7rem',
@@ -157,7 +157,7 @@ export default async function ProductPage({ params }: PageProps) {
             }}>
               You may also like
             </h2>
-            <div style={{
+            <div className="fashn-product-grid-4" style={{
               display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px',
             }}>
               {related.filter(r => r.id !== product.id).slice(0, 4).map(p => (
