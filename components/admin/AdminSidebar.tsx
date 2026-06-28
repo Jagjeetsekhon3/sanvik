@@ -21,6 +21,7 @@ const NAV = [
   { label: 'Header', href: '/master-admin/header', icon: '▬' },
   { label: 'Footer', href: '/master-admin/footer', icon: '▭' },
   { label: 'Size Guides', href: '/master-admin/size-guides', icon: '📏' },
+  { label: 'Team', href: '/master-admin/team', icon: '◎' },
   { label: 'Settings', href: '/master-admin/settings', icon: '◌' },
 ]
 
