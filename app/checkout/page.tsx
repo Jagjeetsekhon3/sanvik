@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useCart } from '@/components/store/CartContext'
 import { useTenant } from '@/components/TenantProvider'
+import { useTenant } from '@/components/TenantProvider'
 import { Address } from '@/types'
 import { useRouter } from 'next/navigation'
 
@@ -38,7 +39,30 @@ export default function CheckoutPage() {
   const [step, setStep] = useState<Step>('address')
   const [error, setError] = useState<string | null>(null)
   const [discountCode, setDiscountCode] = useState('')
+  const tenant = useTenant()
   const [paymentMethod, setPaymentMethod] = useState<'razorpay' | 'stripe' | 'cod'>('razorpay')
+  const [availableMethods, setAvailableMethods] = useState<{id: string; label: string; sub: string; flag: string}[]>([])
+
+  // Build available payment methods from tenant config
+  useEffect(() => {
+    const methods = []
+    if (tenant.razorpay_key_id) {
+      methods.push({ id: 'razorpay', label: 'Pay Online (UPI / Cards / NetBanking)', sub: 'Powered by Razorpay', flag: '🇮🇳' })
+    }
+    if (tenant.stripe_publishable_key) {
+      methods.push({ id: 'stripe', label: 'Pay with Card (International)', sub: 'Powered by Stripe', flag: '🌍' })
+    }
+    if (tenant.cod_enabled) {
+      methods.push({ id: 'cod', label: 'Cash on Delivery', sub: 'Pay when your order arrives', flag: '💵' })
+    }
+    // Fallback — show all if none configured yet
+    if (methods.length === 0) {
+      methods.push({ id: 'razorpay', label: 'Pay Online (UPI / Cards / NetBanking)', sub: 'Powered by Razorpay', flag: '🇮🇳' })
+      methods.push({ id: 'cod', label: 'Cash on Delivery', sub: 'Pay when your order arrives', flag: '💵' })
+    }
+    setAvailableMethods(methods)
+    setPaymentMethod(methods[0].id as 'razorpay' | 'stripe' | 'cod')
+  }, [tenant])
 
   const [address, setAddress] = useState<Address>({
     name: '', phone: '', line1: '', line2: null,
@@ -354,9 +378,7 @@ export default function CheckoutPage() {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '28px' }}>
                 {[
-                  { id: 'razorpay', label: 'Pay Online (UPI / Cards / NetBanking)', sub: 'Powered by Razorpay', flag: '🇮🇳' },
-                  { id: 'stripe', label: 'Pay with Card (International)', sub: 'Powered by Stripe', flag: '🌍' },
-                  { id: 'cod', label: 'Cash on Delivery', sub: 'Pay when your order arrives', flag: '💵' },
+                ...availableMethods,
                 ].map(method => (
                   <label key={method.id} style={{
                     border: '1px solid',
