@@ -1,8 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useCart } from '@/components/store/CartContext'
-import { useTenant } from '@/components/TenantProvider'
 import { useTenant } from '@/components/TenantProvider'
 import { Address } from '@/types'
 import { useRouter } from 'next/navigation'
