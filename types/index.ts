@@ -38,6 +38,11 @@ export interface Tenant {
   contact_email: string | null
   instagram_url: string | null
   facebook_url: string | null
+  youtube_url: string | null
+  twitter_url: string | null
+  tiktok_url: string | null
+  pinterest_url: string | null
+  linkedin_url: string | null
   return_policy: string | null
   shipping_policy: string | null
 }

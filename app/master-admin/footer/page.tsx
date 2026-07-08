@@ -129,6 +129,13 @@ export default function FooterBuilderPage() {
           <Toggle value={showSocials} onChange={setShowSocials} label="Show social links" />
           <Toggle value={showPayments} onChange={setShowPayments} label="Show payment badges" />
         </div>
+        {showSocials && (
+          <div style={{ marginTop: '14px', padding: '12px 16px', backgroundColor: '#f0f7ff', borderRadius: '6px', border: '1px solid #bfdbfe' }}>
+            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.78rem', color: '#1d4ed8', margin: 0 }}>
+              Social links are managed in <a href="/master-admin/settings" style={{ color: '#1d4ed8', fontWeight: 600 }}>Settings → Social Media</a>. Add your Facebook, Instagram, YouTube, TikTok etc. there and they will appear automatically in the footer.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Newsletter */}

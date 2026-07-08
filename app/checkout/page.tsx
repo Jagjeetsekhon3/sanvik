@@ -53,10 +53,14 @@ export default function CheckoutPage() {
     if (tenant.cod_enabled) {
       methods.push({ id: 'cod', label: 'Cash on Delivery', sub: 'Pay when your order arrives', flag: '💵' })
     }
-    // Fallback — show all if none configured yet
+    // Fallback — if no payment gateway configured, show COD only if enabled
     if (methods.length === 0) {
-      methods.push({ id: 'razorpay', label: 'Pay Online (UPI / Cards / NetBanking)', sub: 'Powered by Razorpay', flag: '🇮🇳' })
-      methods.push({ id: 'cod', label: 'Cash on Delivery', sub: 'Pay when your order arrives', flag: '💵' })
+      if (tenant.cod_enabled) {
+        methods.push({ id: 'cod', label: 'Cash on Delivery', sub: 'Pay when your order arrives', flag: '💵' })
+      } else {
+        // Nothing configured — show a placeholder
+        methods.push({ id: 'cod', label: 'Pay on Delivery', sub: 'Configure payment gateways in Settings', flag: '💵' })
+      }
     }
     setAvailableMethods(methods)
     setPaymentMethod(methods[0].id as 'razorpay' | 'stripe' | 'cod')

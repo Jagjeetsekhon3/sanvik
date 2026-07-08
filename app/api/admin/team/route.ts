@@ -60,7 +60,7 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   const tenantId = request.headers.get('x-tenant-id')
   if (!tenantId) return NextResponse.json({ error: 'No tenant' }, { status: 400 })
-  const { id } = await request.json()
+  const { id, email } = await request.json()
   const { url, key } = sb()
 
   // Prevent deleting the last owner
@@ -69,12 +69,17 @@ export async function DELETE(request: NextRequest) {
     { headers: { 'apikey': key, 'Authorization': `Bearer ${key}` }, cache: 'no-store' }
   )
   const owners = await ownersRes.json()
-  const thisAdmin = owners?.find((a: { id: string }) => a.id === id)
+  const thisAdmin = owners?.find((a: { id: string; email: string }) => a.id === id || a.email === email)
   if (thisAdmin && owners?.length <= 1) {
     return NextResponse.json({ error: 'Cannot remove the only owner' }, { status: 400 })
   }
 
-  await fetch(`${url}/rest/v1/admins?id=eq.${id}&tenant_id=eq.${tenantId}`, {
+  // Support delete by id or email
+  const filter = id
+    ? `id=eq.${id}&tenant_id=eq.${tenantId}`
+    : `email=eq.${encodeURIComponent(email)}&tenant_id=eq.${tenantId}`
+
+  await fetch(`${url}/rest/v1/admins?${filter}`, {
     method: 'DELETE',
     headers: { 'apikey': key, 'Authorization': `Bearer ${key}` },
   })

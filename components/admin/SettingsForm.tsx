@@ -36,6 +36,12 @@ export default function SettingsForm({ tenant }: { tenant: Tenant }) {
   const [about, setAbout] = useState(tenant.about || '')
   const [contactEmail, setContactEmail] = useState(tenant.contact_email || '')
   const [instagramUrl, setInstagramUrl] = useState(tenant.instagram_url || '')
+  const [facebookUrl, setFacebookUrl] = useState(tenant.facebook_url || '')
+  const [youtubeUrl, setYoutubeUrl] = useState((tenant as Record<string,unknown>).youtube_url as string || '')
+  const [twitterUrl, setTwitterUrl] = useState((tenant as Record<string,unknown>).twitter_url as string || '')
+  const [tiktokUrl, setTiktokUrl] = useState((tenant as Record<string,unknown>).tiktok_url as string || '')
+  const [pinterestUrl, setPinterestUrl] = useState((tenant as Record<string,unknown>).pinterest_url as string || '')
+  const [linkedinUrl, setLinkedinUrl] = useState((tenant as Record<string,unknown>).linkedin_url as string || '')
   const [instagramUsername, setInstagramUsername] = useState(tenant.instagram_username || '')
   const [instagramAccessToken, setInstagramAccessToken] = useState(tenant.instagram_access_token || '')
   const [instagramShowFeed, setInstagramShowFeed] = useState(tenant.instagram_show_feed || false)
@@ -72,6 +78,12 @@ export default function SettingsForm({ tenant }: { tenant: Tenant }) {
       about,
       contact_email: contactEmail,
       instagram_url: instagramUrl,
+      facebook_url: facebookUrl,
+      youtube_url: youtubeUrl || null,
+      twitter_url: twitterUrl || null,
+      tiktok_url: tiktokUrl || null,
+      pinterest_url: pinterestUrl || null,
+      linkedin_url: linkedinUrl || null,
       instagram_username: instagramUsername,
       instagram_access_token: instagramAccessToken,
       instagram_show_feed: instagramShowFeed,
