@@ -33,10 +33,19 @@ const SOCIAL_ICONS: Record<string, { icon: string; label: string }> = {
 }
 
 export default function Footer({ tenant }: { tenant: Tenant }) {
+  const socialMap: Record<string, string | null> = {
+    instagram_url: tenant.instagram_url,
+    facebook_url: tenant.facebook_url,
+    youtube_url: tenant.youtube_url,
+    twitter_url: tenant.twitter_url,
+    tiktok_url: tenant.tiktok_url,
+    pinterest_url: tenant.pinterest_url,
+    linkedin_url: tenant.linkedin_url,
+  }
   const socialLinks = Object.entries(SOCIAL_ICONS)
-    .filter(([key]) => (tenant as Record<string, unknown>)[key])
+    .filter(([key]) => !!socialMap[key])
     .map(([key, meta]) => ({
-      url: (tenant as Record<string, unknown>)[key] as string,
+      url: socialMap[key] as string,
       ...meta,
     }))
 
