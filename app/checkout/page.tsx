@@ -39,7 +39,6 @@ export default function CheckoutPage() {
   const [step, setStep] = useState<Step>('address')
   const [error, setError] = useState<string | null>(null)
   const [discountCode, setDiscountCode] = useState('')
-  const tenant = useTenant()
   const [paymentMethod, setPaymentMethod] = useState<'razorpay' | 'stripe' | 'cod'>('razorpay')
   const [availableMethods, setAvailableMethods] = useState<{id: string; label: string; sub: string; flag: string}[]>([])
 
