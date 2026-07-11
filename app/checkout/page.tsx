@@ -56,12 +56,10 @@ export default function CheckoutPage() {
         if (config.cod_enabled) {
           methods.push({ id: 'cod', label: 'Cash on Delivery', sub: 'Pay when your order arrives', flag: '💵' })
         }
-        // Only show placeholder if nothing at all is configured
-        if (methods.length === 0) {
-          methods.push({ id: 'cod', label: 'No payment method configured', sub: 'Please configure in Settings', flag: '⚠️' })
-        }
         setAvailableMethods(methods)
-        setPaymentMethod(methods[0].id as 'razorpay' | 'stripe' | 'cod')
+        if (methods.length > 0) {
+          setPaymentMethod(methods[0].id as 'razorpay' | 'stripe' | 'cod')
+        }
       })
       .catch(() => {
         // Fallback on error
@@ -100,6 +98,10 @@ export default function CheckoutPage() {
   }
 
   const handlePlaceOrder = async () => {
+    if (availableMethods.length === 0) {
+      setError('No payment method configured. Please contact the store.')
+      return
+    }
     setStep('processing')
     setError(null)
 
@@ -382,10 +384,13 @@ export default function CheckoutPage() {
                 Payment Method
               </p>
 
+              {availableMethods.length === 0 ? (
+                <div style={{ padding: '20px', backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '4px', marginBottom: '28px', fontFamily: 'var(--font-body)', fontSize: '0.82rem', color: '#dc2626' }}>
+                  ⚠️ No payment method configured. Go to <strong>Admin → Settings → Payments</strong> to set up Razorpay, Stripe, or enable Cash on Delivery.
+                </div>
+              ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '28px' }}>
-                {[
-                ...availableMethods,
-                ].map(method => (
+                {availableMethods.map(method => (
                   <label key={method.id} style={{
                     border: '1px solid',
                     borderColor: paymentMethod === method.id ? 'var(--color-primary)' : 'rgba(0,0,0,0.12)',
@@ -410,6 +415,7 @@ export default function CheckoutPage() {
                   </label>
                 ))}
               </div>
+              )}
 
               {/* Discount code */}
               <div style={{ marginBottom: '28px' }}>
