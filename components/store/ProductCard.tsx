@@ -4,10 +4,13 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { Product } from '@/types'
 import { useTenant } from '@/components/TenantProvider'
+import { useCart } from '@/components/store/CartContext'
 import WishlistButton from './WishlistButton'
 
 export default function ProductCard({ product }: { product: Product }) {
   const tenant = useTenant()
+  const { addItem } = useCart()
+  const [adding, setAdding] = useState(false)
   const [hovered, setHovered] = useState(false)
 
   const fmt = (amount: number) =>
@@ -17,6 +20,26 @@ export default function ProductCard({ product }: { product: Product }) {
 
   const primaryImage = product.images?.[0]
   const secondaryImage = product.images?.[1]
+  // Quick add — uses first available variant
+  const firstVariant = (product.variants || [])[0]
+  const handleQuickAdd = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!firstVariant || firstVariant.stock === 0) return
+    setAdding(true)
+    addItem({
+      product_id: product.id,
+      variant_id: firstVariant.id,
+      product_name: product.name,
+      product_image: product.images?.[0] || '',
+      size: firstVariant.size,
+      color: firstVariant.color,
+      price: firstVariant.price_override ?? product.base_price,
+      quantity: 1,
+    })
+    setTimeout(() => setAdding(false), 1500)
+  }
+
   const isOnSale = product.compare_price && product.compare_price > product.base_price
   const discount = isOnSale
     ? Math.round(((product.compare_price! - product.base_price) / product.compare_price!) * 100)
@@ -76,6 +99,32 @@ export default function ProductCard({ product }: { product: Product }) {
               <circle cx="8.5" cy="8.5" r="1.5"/>
               <path d="M21 15l-5-5L5 21"/>
             </svg>
+          </div>
+        )}
+
+        {/* Quick Add button — appears on hover */}
+        {firstVariant && firstVariant.stock > 0 && (
+          <div style={{
+            position: 'absolute', bottom: '12px', left: '12px', right: '12px',
+            opacity: hovered ? 1 : 0,
+            transform: hovered ? 'translateY(0)' : 'translateY(6px)',
+            transition: 'opacity 0.25s ease, transform 0.25s ease',
+            zIndex: 2,
+          }}>
+            <button
+              onClick={handleQuickAdd}
+              style={{
+                width: '100%', padding: '10px',
+                backgroundColor: adding ? 'var(--color-accent)' : 'var(--color-primary)',
+                color: 'var(--color-secondary)',
+                border: 'none', cursor: 'pointer',
+                fontFamily: 'var(--font-body)', fontSize: '0.7rem',
+                letterSpacing: '0.15em', textTransform: 'uppercase',
+                fontWeight: 600, transition: 'background-color 0.2s',
+              }}
+            >
+              {adding ? '✓ Added' : product.variants && product.variants.length > 1 ? 'Quick Add' : 'Add to Bag'}
+            </button>
           </div>
         )}
 

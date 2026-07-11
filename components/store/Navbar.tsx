@@ -88,7 +88,15 @@ export default function Navbar() {
           color: 'var(--color-primary)', textDecoration: 'none',
           flex: 1, textAlign: 'center', whiteSpace: 'nowrap',
         }} className="fashn-logo">
-          {tenant.brand_name}
+          {tenant.logo_url ? (
+            <img
+              src={tenant.logo_url}
+              alt={tenant.brand_name}
+              style={{ height: '36px', maxWidth: '160px', objectFit: 'contain' }}
+            />
+          ) : (
+            tenant.brand_name
+          )}
         </Link>
 
         {/* Right — icons */}
