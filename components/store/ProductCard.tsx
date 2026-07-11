@@ -49,12 +49,12 @@ export default function ProductCard({ product }: { product: Product }) {
   const colors = [...new Set((product.variants || []).map(v => v.color))]
 
   return (
-    <Link
-      href={`/product/${product.slug}`}
-      style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
+    <div
+      style={{ textDecoration: 'none', color: 'inherit', display: 'block', position: 'relative' }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
+    <Link href={`/product/${product.slug}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
       {/* Image */}
       <div style={{
         position: 'relative',
@@ -102,31 +102,7 @@ export default function ProductCard({ product }: { product: Product }) {
           </div>
         )}
 
-        {/* Quick Add button — appears on hover */}
-        {firstVariant && firstVariant.stock > 0 && (
-          <div style={{
-            position: 'absolute', bottom: '12px', left: '12px', right: '12px',
-            opacity: hovered ? 1 : 0,
-            transform: hovered ? 'translateY(0)' : 'translateY(6px)',
-            transition: 'opacity 0.25s ease, transform 0.25s ease',
-            zIndex: 2,
-          }}>
-            <button
-              onClick={handleQuickAdd}
-              style={{
-                width: '100%', padding: '10px',
-                backgroundColor: adding ? 'var(--color-accent)' : 'var(--color-primary)',
-                color: 'var(--color-secondary)',
-                border: 'none', cursor: 'pointer',
-                fontFamily: 'var(--font-body)', fontSize: '0.7rem',
-                letterSpacing: '0.15em', textTransform: 'uppercase',
-                fontWeight: 600, transition: 'background-color 0.2s',
-              }}
-            >
-              {adding ? '✓ Added' : product.variants && product.variants.length > 1 ? 'Quick Add' : 'Add to Bag'}
-            </button>
-          </div>
-        )}
+  {/* Quick Add — inside image but outside Link handled below */}
 
         {/* Badges */}
         <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -163,6 +139,35 @@ export default function ProductCard({ product }: { product: Product }) {
         <WishlistButton productId={product.id} size="small" />
       </div>
 
+</Link>
+      {/* Quick Add button — outside Link so click works */}
+      {firstVariant && firstVariant.stock > 0 && (
+        <div style={{
+          position: 'absolute',
+          bottom: '120px',
+          left: '12px', right: '12px',
+          opacity: hovered ? 1 : 0,
+          transform: hovered ? 'translateY(0)' : 'translateY(6px)',
+          transition: 'opacity 0.25s ease, transform 0.25s ease',
+          zIndex: 3,
+        }}>
+          <button
+            onClick={handleQuickAdd}
+            style={{
+              width: '100%', padding: '11px',
+              backgroundColor: adding ? 'var(--color-accent)' : 'var(--color-primary)',
+              color: 'var(--color-secondary)',
+              border: 'none', cursor: 'pointer',
+              fontFamily: 'var(--font-body)', fontSize: '0.7rem',
+              letterSpacing: '0.15em', textTransform: 'uppercase',
+              fontWeight: 600, transition: 'background-color 0.2s',
+            }}
+          >
+            {adding ? '✓ Added' : product.variants && product.variants.length > 1 ? 'Quick Add' : 'Add to Bag'}
+          </button>
+        </div>
+      )}
+      <Link href={`/product/${product.slug}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
       {/* Info */}
       <div>
         {/* Color swatches */}
@@ -230,5 +235,6 @@ export default function ProductCard({ product }: { product: Product }) {
         </div>
       </div>
     </Link>
+    </div>
   )
 }
