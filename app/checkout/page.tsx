@@ -41,30 +41,34 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState<'razorpay' | 'stripe' | 'cod'>('razorpay')
   const [availableMethods, setAvailableMethods] = useState<{id: string; label: string; sub: string; flag: string}[]>([])
 
-  // Build available payment methods from tenant config
+  // Fetch payment config fresh from server — tenant context may not have keys
   useEffect(() => {
-    const methods = []
-    if (tenant.razorpay_key_id) {
-      methods.push({ id: 'razorpay', label: 'Pay Online (UPI / Cards / NetBanking)', sub: 'Powered by Razorpay', flag: '🇮🇳' })
-    }
-    if (tenant.stripe_publishable_key) {
-      methods.push({ id: 'stripe', label: 'Pay with Card (International)', sub: 'Powered by Stripe', flag: '🌍' })
-    }
-    if (tenant.cod_enabled) {
-      methods.push({ id: 'cod', label: 'Cash on Delivery', sub: 'Pay when your order arrives', flag: '💵' })
-    }
-    // Fallback — if no payment gateway configured, show COD only if enabled
-    if (methods.length === 0) {
-      if (tenant.cod_enabled) {
-        methods.push({ id: 'cod', label: 'Cash on Delivery', sub: 'Pay when your order arrives', flag: '💵' })
-      } else {
-        // Nothing configured — show a placeholder
-        methods.push({ id: 'cod', label: 'Pay on Delivery', sub: 'Configure payment gateways in Settings', flag: '💵' })
-      }
-    }
-    setAvailableMethods(methods)
-    setPaymentMethod(methods[0].id as 'razorpay' | 'stripe' | 'cod')
-  }, [tenant])
+    fetch('/api/payment-config')
+      .then(r => r.json())
+      .then(config => {
+        const methods: {id: string; label: string; sub: string; flag: string}[] = []
+        if (config.has_razorpay) {
+          methods.push({ id: 'razorpay', label: 'Pay Online (UPI / Cards / NetBanking)', sub: 'Powered by Razorpay', flag: '🇮🇳' })
+        }
+        if (config.has_stripe) {
+          methods.push({ id: 'stripe', label: 'Pay with Card (International)', sub: 'Powered by Stripe', flag: '🌍' })
+        }
+        if (config.cod_enabled) {
+          methods.push({ id: 'cod', label: 'Cash on Delivery', sub: 'Pay when your order arrives', flag: '💵' })
+        }
+        // Only show placeholder if nothing at all is configured
+        if (methods.length === 0) {
+          methods.push({ id: 'cod', label: 'No payment method configured', sub: 'Please configure in Settings', flag: '⚠️' })
+        }
+        setAvailableMethods(methods)
+        setPaymentMethod(methods[0].id as 'razorpay' | 'stripe' | 'cod')
+      })
+      .catch(() => {
+        // Fallback on error
+        setAvailableMethods([{ id: 'cod', label: 'Cash on Delivery', sub: 'Pay when your order arrives', flag: '💵' }])
+        setPaymentMethod('cod')
+      })
+  }, [])
 
   const [address, setAddress] = useState<Address>({
     name: '', phone: '', line1: '', line2: null,
